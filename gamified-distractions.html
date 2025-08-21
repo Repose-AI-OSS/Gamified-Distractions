@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Games</title>
+  <style>
+    :root{
+      --bg: #0d0f14;
+      --panel: #141824;
+      --panel-2: #1b2233;
+      --ink: #e8eefc;
+      --muted: #a8b2d1;
+      --accent: #7c9bff;
+      --accent-2: #6ee7ff;
+      --ok: #3ddc97;
+      --warn: #ffc857;
+      --danger: #ff7a7a;
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin:0; color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+      background:
+        radial-gradient(1000px 700px at 10% -10%, rgba(108,99,255,.15), transparent 60%),
+        radial-gradient(900px 700px at 110% 10%, rgba(110,231,255,.12), transparent 50%),
+        linear-gradient(180deg, #0a0c12 0%, #0d0f14 60%, #0d0f14 100%);
+      overflow-x: hidden;
+    }
+
+    .wrap{
+      max-width: 1100px; margin: 0 auto; padding: 28px 18px 80px; position: relative;
+    }
+
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px;
+    }
+    .brand{ display:flex; align-items:center; gap:12px; }
+    .logo{
+      width:44px; height:44px; border-radius:50%;
+      background: conic-gradient(from 210deg, var(--accent), var(--accent-2), var(--ok), var(--accent));
+      padding:2px; animation: spin 18s linear infinite;
+      box-shadow: 0 10px 30px rgba(124,155,255,.25);
+    }
+    .logo > span{ display:grid; place-items:center; width:100%; height:100%; border-radius:50%;
+      background: radial-gradient(120% 120% at 35% 30%, rgba(255,255,255,.12), transparent 50%), #0c0f17;
+      font-size:22px; }
+    .title h1{ margin:0; font-size: clamp(18px, 2.4vw, 24px); letter-spacing:.2px; }
+    .title p{ margin:0; color:var(--muted); font-size:13px; opacity:.9; }
+
+    .stats{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .pill{ background:var(--panel-2); border:1px solid rgba(255,255,255,.08); color:var(--ink);
+      padding:10px 14px; border-radius:999px; font-weight:700; font-size:12px; letter-spacing:.3px; display:inline-flex; align-items:center; gap:8px; }
+
+    .tabs{ display:flex; gap:10px; flex-wrap:wrap; margin: 10px 0 18px; }
+    .tab{
+      padding:10px 14px; border-radius:12px; background:var(--panel);
+      border:1px solid rgba(255,255,255,.08); color:var(--ink); cursor:pointer; transition:.2s; font-weight:700; font-size:13px;
+    }
+    .tab:hover{ transform: translateY(-2px); background:#192033; }
+    .tab.active{ background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0b1022; box-shadow: var(--shadow); }
+
+    .grid{
+      display:grid; grid-template-columns: repeat(12, 1fr); gap: 16px;
+    }
+    .card{
+      background: var(--panel); border:1px solid rgba(255,255,255,.08); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 16px; position:relative; overflow: hidden;
+    }
+    .card h2{ font-size:16px; margin: 0 0 8px 0; }
+    .card p{ margin: 0 0 12px 0; color: var(--muted); font-size: 13px; }
+
+    .hint{ color: var(--muted); font-size:12px; opacity:.9; }
+    .btn{ border:0; border-radius:12px; padding:10px 12px; font-weight:800; cursor:pointer; color:#0b1022;
+          background:linear-gradient(135deg,var(--accent),var(--accent-2)); box-shadow: 0 10px 30px rgba(100,140,255,.35);
+          transition: transform .12s ease; }
+    .btn:active{ transform: translateY(1px) scale(.98); }
+    .btn.ghost{ background: var(--panel-2); color: var(--ink); box-shadow:none; border:1px solid rgba(255,255,255,.08); }
+
+    /* Layout widths per tool */
+    .col-12{ grid-column: span 12; }
+    .col-8{ grid-column: span 8; }
+    .col-6{ grid-column: span 6; }
+    .col-4{ grid-column: span 4; }
+
+    @media (max-width: 980px){ .col-8{ grid-column: span 12; } .col-6{ grid-column: span 12; } .col-4{ grid-column: span 12; } }
+
+    /* Mini widgets styling */
+    .progress{ height: 10px; background:#0e1422; border:1px solid rgba(255,255,255,.06); border-radius:999px; overflow:hidden; }
+    .bar{ height:100%; width: 0%; background: linear-gradient(90deg, var(--ok), var(--accent)); transition: width .4s ease; }
+
+    .list{ display:grid; gap:10px; }
+    .task{ display:grid; grid-template-columns: 22px 1fr auto; gap:10px; align-items:center; background:var(--panel-2); padding:10px; border-radius:12px; border:1px dashed rgba(255,255,255,.08); }
+    .task input{ accent-color: var(--ok); }
+    .tag{ font-size:11px; background:#0e1422; border:1px solid rgba(255,255,255,.08); padding:4px 8px; border-radius:999px; color:var(--muted); }
+
+    .badge{ display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.1);
+            background:linear-gradient(180deg, #12182b, #0f1526); }
+
+    .chat{
+      height: 280px; overflow-y: auto; padding-right:6px; display:grid; gap:10px; align-content:start;
+      scrollbar-color: #2b3550 transparent; scrollbar-width: thin;
+    }
+    .bubble{ max-width: 72%; padding:10px 12px; border-radius:14px; font-size:14px; line-height:1.35; }
+    .bot{ background:#172038; border:1px solid rgba(124,155,255,.25); }
+    .me{ background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0b1022; justify-self:end; }
+
+    .row{ display:flex; gap:8px; }
+    .row input, .row textarea, select{
+      width:100%; background:#0e1422; color:var(--ink); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:10px 12px; outline: none;
+    }
+    textarea{ min-height: 80px; resize: vertical; }
+
+    .meter{ height: 12px; border-radius: 999px; background:#0e1422; border:1px solid rgba(255,255,255,.08); overflow:hidden; }
+    .meter > span{ display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--warn), var(--ok)); transition: width .4s; }
+
+    /* Fun confetti */
+    .confetti{ position: fixed; top: -10vh; left:0; width:100%; pointer-events:none; text-align:center; }
+    .confetti span{ display:inline-block; margin: 0 3px; opacity:0; transform: translateY(-20px) rotate(0); animation: pop 1.2s ease forwards; }
+
+    @keyframes pop{ 10%{opacity:1;} 100%{ opacity:0; transform: translateY(90vh) rotate(360deg); } }
+    @keyframes spin{ to{ transform: rotate(1turn); } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo"><span>🎮</span></div>
+        <div class="title">
+          <h1>Gamified Distractions</h1>
+          <p>Playful micro‑tools inspired by: SuperBetter · Happify · Woebot · Sanvello · CBT Thought Diary</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="pill" id="scorePill">⭐ Score: <span id="score">0</span></div>
+        <div class="pill">🔥 Streak: <span id="streak">0</span></div>
+        <button class="pill" id="resetBtn" title="Reset progress">♻ Reset</button>
+      </div>
+    </header>
+
+    <div class="tabs" id="tabs"></div>
+
+    <section class="grid" id="panels">
+      <!-- Panels injected by JS -->
+    </section>
+  </div>
+
+  <div class="confetti" id="confetti"></div>
+
+  <script>
+    // ======= State & Helpers =======
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => document.querySelectorAll(sel);
+
+    const state = JSON.parse(localStorage.getItem('gd-state')||'{}');
+    state.score ??= 0; state.streak ??= 0; state.lastDay ??= null;
+
+    function save(){ localStorage.setItem('gd-state', JSON.stringify(state)); }
+    function todayKey(){ const d=new Date(); return d.toISOString().slice(0,10); }
+
+    // Streak logic
+    (function initStreak(){
+      const t = todayKey();
+      if(state.lastDay !== t){ state.streak = (state.lastDay && daysBetween(state.lastDay, t)===1) ? (state.streak+1) : 1; state.lastDay = t; save(); }
+      $('#streak').textContent = state.streak;
+    })();
+    function daysBetween(a,b){ return Math.round((+new Date(b) - +new Date(a)) / 86400000); }
+
+    // Score
+    function addScore(n=5){ state.score += n; $('#score').textContent = state.score; save(); blast(); }
+    $('#score').textContent = state.score;
+
+    // Tabs
+    const apps = [
+      { id:'superbetter', label:'SuperBetter', render: renderSuperBetter },
+      { id:'happify', label:'Happify', render: renderHappify },
+      { id:'woebot', label:'Woebot', render: renderWoebot },
+      { id:'sanvello', label:'Sanvello', render: renderSanvello },
+      { id:'cbt', label:'CBT Thought Diary', render: renderCBT }
+    ];
+
+    const tabs = $('#tabs');
+    apps.forEach((a,i)=>{
+      const b = document.createElement('button'); b.className = 'tab' + (i?'' : ' active'); b.textContent = a.label;
+      b.onclick = ()=> selectTab(a.id);
+      b.dataset.id = a.id; tabs.appendChild(b);
+    });
+
+    function selectTab(id){
+      $$('.tab').forEach(t=>t.classList.toggle('active', t.dataset.id===id));
+      const host = $('#panels'); host.innerHTML = '';
+      const app = apps.find(x=>x.id===id); app?.render(host);
+    }
+
+    // initial tab
+    selectTab(apps[0].id);
+
+    // Reset
+    $('#resetBtn').onclick = ()=>{
+      if(confirm('Reset all progress?')){ localStorage.removeItem('gd-state'); location.reload(); }
+    };
+
+    // ======= SuperBetter =======
+    function renderSuperBetter(host){
+      const panel = document.createElement('div'); panel.className = 'card col-8';
+      panel.innerHTML = `
+        <h2>SuperBetter – Quests & Power‑ups</h2>
+        <p>Quick challenges to power up your resilience. Do a quest, fight a bad guy, collect points.</p>
+        <div class="progress" aria-label="XP progress"><div class="bar" id="sb-bar" style="width:${state.sbXP||0}%"></div></div>
+        <div class="list" style="margin-top:12px;">
+          ${[
+            {t:'Drink a full glass of water', tag:'power‑up'},
+            {t:'Stretch for 30 seconds', tag:'quest'},
+            {t:'Name 3 things you can see', tag:'grounding'},
+            {t:'Inbox zero for 2 minutes', tag:'micro‑quest'},
+            {t:'Smile at your future self', tag:'kindness'}
+          ].map((x,i)=>`
+            <div class="task">
+              <input type="checkbox" data-i="${i}" />
+              <div>${x.t}<div class="hint">Tag: <span class="tag">${x.tag}</span></div></div>
+              <button class="btn ghost" data-boss="${i}">Bad Guy ✊</button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      const side = document.createElement('div'); side.className = 'card col-4';
+      side.innerHTML = `
+        <h2>Tiny Rewards</h2>
+        <p>Claim a 5‑point boost anytime you complete a task.</p>
+        <button class="btn" id="sb-claim">Claim +5 ⭐</button>
+        <div style="height:10px"></div>
+        <div class="badge">🎯 Goal: reach 100% XP today</div>
+        <p class="hint" style="margin-top:10px">Each checkbox or boss tap bumps your XP by 10%.</p>
+      `;
+
+      host.append(panel, side);
+
+      panel.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+        cb.onchange = ()=>{ bumpXP(10); addScore(5); };
+      });
+      panel.querySelectorAll('[data-boss]').forEach(b=>{
+        b.onclick = ()=>{ bumpXP(10); addScore(5); b.textContent = 'Victory ✅'; };
+      });
+      $('#sb-claim').onclick = ()=> addScore(5);
+
+      function bumpXP(n){ state.sbXP = Math.min(100, (state.sbXP||0)+n); $('#sb-bar').style.width = state.sbXP + '%'; save(); if(state.sbXP===100) toast('Daily XP complete!'); }
+    }
+
+    // ======= Happify =======
+    function renderHappify(host){
+      const panel = document.createElement('div'); panel.className='card col-6';
+      panel.innerHTML = `
+        <h2>Happify – Uplift Spinner</h2>
+        <p>Spin a tiny action. Do it. Tap Done. Feel the meter rise.</p>
+        <div class="badge" id="hp-action">Press Spin 🎰</div>
+        <div style="height:10px"></div>
+        <div class="row">
+          <button class="btn" id="hp-spin">Spin</button>
+          <button class="btn ghost" id="hp-done">Done ✅</button>
+        </div>
+        <div style="height:14px"></div>
+        <div class="meter"><span id="hp-meter" style="width:${state.hp||0}%"></span></div>
+        <p class="hint">Meter resets daily. Each Done = +15% & +5⭐.</p>
+      `;
+
+      const side = document.createElement('div'); side.className='card col-6';
+      side.innerHTML = `
+        <h2>Quick Ideas</h2>
+        <div class="list" id="hp-list"></div>
+      `;
+
+      host.append(panel, side);
+
+      const ideas = [
+        'Text a thank‑you to someone',
+        '2‑minute tidy of your desk',
+        'Look around: name 3 colors',
+        'Play one favorite song',
+        'Step outside for 60 seconds',
+        'Swap one worry for one plan'
+      ];
+      const action = $('#hp-action');
+      const meter = $('#hp-meter');
+      const list = $('#hp-list'); list.innerHTML = ideas.map(i=>`<div class="task"><span></span><div>${i}</div><span class="tag">idea</span></div>`).join('');
+
+      $('#hp-spin').onclick = ()=>{
+        const pick = ideas[Math.floor(Math.random()*ideas.length)];
+        action.textContent = 'Try: ' + pick; bounce(action);
+      };
+      $('#hp-done').onclick = ()=>{
+        state.hp = Math.min(100, (state.hp||0)+15); meter.style.width = state.hp+'%'; addScore(5); save(); if(state.hp===100) toast('Happiness meter maxed!');
+      };
+    }
+
+    // ======= Woebot (lite, non-clinical) =======
+    function renderWoebot(host){
+      const panel = document.createElement('div'); panel.className='card col-12';
+      panel.innerHTML = `
+        <h2>Woebot – Friendly Bot (non‑clinical)</h2>
+        <p class="hint">A playful, supportive chat. Not medical or therapeutic advice.</p>
+        <div class="chat" id="wb-chat"></div>
+        <div class="row" style="margin-top:10px">
+          <input id="wb-input" placeholder="Type a short message…"/>
+          <button class="btn" id="wb-send">Send</button>
+        </div>
+      `;
+      host.append(panel);
+
+      const chat = $('#wb-chat');
+      function addBubble(txt, who='bot'){
+        const b = document.createElement('div'); b.className = 'bubble ' + (who==='me'?'me':'bot'); b.textContent = txt; chat.appendChild(b); chat.scrollTop = chat.scrollHeight; return b;
+      }
+      const openers = [
+        'Hey! I’ve got tea and optimism ☕✨',
+        'You showed up. That already counts',
+        'Tiny steps, big direction. What’s up?'
+      ];
+      addBubble(openers[Math.floor(Math.random()*openers.length)]);
+
+      const input = $('#wb-input');
+      $('#wb-send').onclick = ()=>{
+        const t = input.value.trim(); if(!t) return; addBubble(t,'me'); input.value='';
+        setTimeout(()=> reply(t), 350);
+      };
+
+      function reply(t){
+        const lower = t.toLowerCase();
+        if(/overthink|loop|spiral/.test(lower)) addBubble('Let’s try a 10‑second pause. Inhale 4 · Hold 4 · Exhale 4. Ready?');
+        else if(/sleep|tired|insomnia/.test(lower)) addBubble('Screen dim + slow music + gentle stretch. Your body loves cues. 😴');
+        else if(/sad|down|blue/.test(lower)) addBubble('Feels heavy. Name one tiny kind thing you can do for yourself right now.');
+        else if(/anx|worry/.test(lower)) addBubble('Worries are clouds, you are the sky. What’s one fact that helps?');
+        else addBubble('Heard. Want a reframe, a plan, or a distraction mini‑quest?');
+        addScore(2);
+      }
+    }
+
+    // ======= Sanvello (mood tracker) =======
+    function renderSanvello(host){
+      const panel = document.createElement('div'); panel.className='card col-6';
+      panel.innerHTML = `
+        <h2>Sanvello – Mood Check</h2>
+        <p>Select your mood and log it. Watch your weekly trend.</p>
+        <div class="row">
+          <select id="sv-mood">
+            <option value="5">🤩 Great</option>
+            <option value="4">😊 Good</option>
+            <option value="3" selected>🙂 Okay</option>
+            <option value="2">😕 Meh</option>
+            <option value="1">😟 Rough</option>
+          </select>
+          <button class="btn" id="sv-log">Log Mood</button>
+        </div>
+        <p class="hint">+5⭐ per log. One log per hour counts toward score.</p>
+      `;
+
+      const chart = document.createElement('div'); chart.className='card col-6';
+      chart.innerHTML = `
+        <h2>7‑Day Mood Trend</h2>
+        <canvas id="sv-canvas" height="160" style="width:100%"></canvas>
+      `;
+
+      host.append(panel, chart);
+
+      const logs = state.svLogs || []; // [{date:'YYYY-MM-DDTHH', val:1..5}]
+      $('#sv-log').onclick = ()=>{
+        const v = +$('#sv-mood').value;
+        const hourKey = new Date().toISOString().slice(0,13);
+        if(!logs.find(x=>x.date===hourKey)){ logs.push({date:hourKey, val:v}); state.svLogs = logs; addScore(5); save(); draw(); }
+        else toast('Logged this hour already');
+      };
+
+      function draw(){
+        const c = document.getElementById('sv-canvas'); const ctx = c.getContext('2d');
+        const days = [...Array(7)].map((_,i)=>{
+          const d = new Date(); d.setDate(d.getDate()-(6-i)); return d.toISOString().slice(0,10);
+        });
+        const perDay = days.map(d=>{
+          const vals = logs.filter(x=>x.date.startsWith(d)).map(x=>x.val);
+          return vals.length? (vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+        });
+        // clear
+        ctx.clearRect(0,0,c.width,c.height);
+        // scale
+        const W = c.width, H=c.height, pad=20; const X = i=> pad + i*(W-2*pad)/6; const Y = v=> H - pad - (v/5)*(H-2*pad);
+        // grid
+        ctx.globalAlpha=.2; ctx.strokeStyle = '#6c7aa5'; ctx.lineWidth=1;
+        for(let i=0;i<=5;i++){ const y = Y(i); ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(W-pad,y); ctx.stroke(); }
+        ctx.globalAlpha=1;
+        // line
+        ctx.strokeStyle = '#7c9bff'; ctx.lineWidth=2; ctx.beginPath();
+        perDay.forEach((v,i)=>{ const x=X(i), y=Y(v); i? ctx.lineTo(x,y) : ctx.moveTo(x,y); }); ctx.stroke();
+        // points
+        perDay.forEach((v,i)=>{ const x=X(i), y=Y(v); ctx.fillStyle = '#6ee7ff'; ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill(); });
+      }
+      // handle HiDPI canvas sizing
+      (function fixCanvas(){ const c=document.getElementById('sv-canvas'); const dpr = Math.max(1, window.devicePixelRatio||1); const cssW = c.clientWidth, cssH = c.getAttribute('height'); c.width = cssW*dpr; c.height = cssH*dpr; c.style.height = cssH+'px'; const ctx=c.getContext('2d'); ctx.scale(dpr,dpr); })();
+      draw();
+    }
+
+    // ======= CBT Thought Diary =======
+    function renderCBT(host){
+      const form = document.createElement('div'); form.className='card col-8';
+      form.innerHTML = `
+        <h2>CBT Thought Diary</h2>
+        <p>Capture a thought, then balance it with a kinder, realistic reframe.</p>
+        <div class="row"><input id="cbt-situation" placeholder="Situation (short)"/></div>
+        <div class="row"><textarea id="cbt-thought" placeholder="Automatic thought…"></textarea></div>
+        <div class="row"><textarea id="cbt-evidence-for" placeholder="Evidence supporting the thought…"></textarea></div>
+        <div class="row"><textarea id="cbt-evidence-against" placeholder="Evidence against the thought…"></textarea></div>
+        <div class="row"><textarea id="cbt-reframe" placeholder="Balanced alternative thought…"></textarea></div>
+        <div class="row"><button class="btn" id="cbt-save">Save Entry (+10⭐)</button><button class="btn ghost" id="cbt-clear">Clear</button></div>
+        <p class="hint">Entries save locally only. You can export below.</p>
+      `;
+
+      const log = document.createElement('div'); log.className='card col-4';
+      log.innerHTML = `
+        <h2>Entries</h2>
+        <div id="cbt-entries" class="list" style="max-height:380px; overflow:auto"></div>
+        <div class="row" style="margin-top:10px"><button class="btn ghost" id="cbt-export">Export JSON</button></div>
+      `;
+
+      host.append(form, log);
+
+      const entries = state.cbt || [];
+      renderList();
+
+      $('#cbt-save').onclick = ()=>{
+        const e = {
+          t: Date.now(),
+          situation: $('#cbt-situation').value.trim(),
+          thought: $('#cbt-thought').value.trim(),
+          for: $('#cbt-evidence-for').value.trim(),
+          against: $('#cbt-evidence-against').value.trim(),
+          reframe: $('#cbt-reframe').value.trim()
+        };
+        if(!e.thought || !e.reframe){ toast('Need at least a thought and a reframe.'); return; }
+        entries.unshift(e); state.cbt = entries; save(); addScore(10); renderList(); clearForm();
+      };
+      $('#cbt-clear').onclick = clearForm;
+      $('#cbt-export').onclick = ()=>{
+        const blob = new Blob([JSON.stringify(entries,null,2)], {type:'application/json'});
+        const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='cbt_entries.json'; a.click(); URL.revokeObjectURL(url);
+      };
+
+      function clearForm(){ ['cbt-situation','cbt-thought','cbt-evidence-for','cbt-evidence-against','cbt-reframe'].forEach(id=>$('#'+id).value=''); }
+
+      function renderList(){
+        const box = $('#cbt-entries');
+        if(!entries.length){ box.innerHTML = '<p class="hint">No entries yet.</p>'; return; }
+        box.innerHTML = entries.map(e=>`
+          <div class="task">
+            <span></span>
+            <div>
+              <strong>${new Date(e.t).toLocaleString()}</strong><br/>
+              <em>${escapeHtml(e.situation||'—')}</em>
+              <div class="hint">Thought: ${escapeHtml(e.thought)}</div>
+              <div class="hint">Reframe: ${escapeHtml(e.reframe)}</div>
+            </div>
+            <span class="tag">CBT</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    // ======= Utilities =======
+    function toast(msg){
+      const el = document.createElement('div'); el.textContent = msg;
+      el.style.position='fixed'; el.style.bottom='20px'; el.style.left='50%'; el.style.transform='translateX(-50%)';
+      el.style.background='#111525'; el.style.border='1px solid rgba(255,255,255,.12)'; el.style.padding='10px 14px'; el.style.borderRadius='12px'; el.style.boxShadow='var(--shadow)';
+      document.body.appendChild(el); setTimeout(()=>{ el.style.transition='opacity .4s'; el.style.opacity=0; setTimeout(()=>el.remove(), 400); }, 1400);
+    }
+    function bounce(el){ el.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:260, easing:'ease-out'}); }
+    function blast(){ const box = $('#confetti'); box.innerHTML = ''; const n=24; for(let i=0;i<n;i++){ const s=document.createElement('span'); s.textContent=['✨','✦','✺','✷','✸','★'][Math.floor(Math.random()*6)]; s.style.fontSize=(16+Math.random()*14)+'px'; s.style.animationDelay=(Math.random()*0.2)+'s'; box.appendChild(s); } setTimeout(()=> box.innerHTML='', 1300); }
+    function escapeHtml(str){ return str.replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+  </script>
+</body>
+</html>
